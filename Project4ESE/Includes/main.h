@@ -15,6 +15,12 @@
 #include "firmware_i\logger.h"
 #include "firmware_i\nvic.h"
 #include "firmware_i\uart.h"
+#include "firmware_i\rtc.h"
 #define LOG
+extern int seconds;
+extern int minutes;
+extern int onesecond;
+extern int hours;
+extern int totalAlarmSeconds;
 
 #endif /* INCLUDES_MAIN_H_ */

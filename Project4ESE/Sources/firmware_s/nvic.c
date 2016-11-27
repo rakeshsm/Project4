@@ -8,7 +8,8 @@
 #include "main.h"
 
 uint8_t packet_byte,rx_byte=0,dma_complete=0;
-extern uint32_t overflow_count;
+uint32_t overflow_count;
+int totalAlarmSeconds;
 
 
 void UART0_IRQHandler (void)
@@ -40,3 +41,27 @@ void DMA0_IRQHandler(void)
 	dma_complete = 1;
 }
 
+void RTC_Seconds_IRQHandler(void){
+
+	onesecond = 1;
+	seconds = RTC_TSR;
+	if (seconds >59){
+		minutes++;
+		RTC_SR &= ~RTC_SR_TCE_MASK;
+		RTC_TSR = 0x00; //Reset counter
+		seconds = RTC_TSR;
+		RTC_SR |= RTC_SR_TCE_MASK;
+		int alarmTime = RTC_TAR;
+		RTC_TAR = alarmTime - 60;
+	}
+	if(minutes > 59){
+		hours++;
+		minutes =0;
+	}
+}
+
+
+void RTC_IRQHandler(void){
+	LOG_0("   Alarm time!!!!");
+	RTC_TAR = totalAlarmSeconds;
+}
