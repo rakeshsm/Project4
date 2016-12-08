@@ -1,9 +1,13 @@
+/*
+ * i2c.c
+ *
+ *  Created on: Nov 21, 2016
+ *      Author: rakes
+ */
 #include "main.h"
-
 void I2C_Init()
 {
-	/* enable clock gating to I2C1 */
-
+	/* enable clock of I2C1 */
 	SIM->SCGC4 |= (1 << SIM_SCGC4_I2C1_SHIFT) & SIM_SCGC4_I2C1_MASK;
 	SIM->SCGC5 |= (1 << SIM_SCGC5_PORTE_SHIFT) & SIM_SCGC5_PORTE_MASK;
 
@@ -15,13 +19,13 @@ void I2C_Init()
 	I2C1->F = I2C_F_MULT(0x00) | I2C_F_ICR(0x12); /* divide by 64 instead, so 375 kHz */
 
 
-	/* enable the I2C module */
+	/* enable the I2C1 module */
 	I2C1->C1 = (1 << I2C_C1_IICEN_SHIFT) & I2C_C1_IICEN_MASK;
 }
 
 
 /**
- * @brief Reads an 8-bit register from an I2C slave
+ * Reads register byte from an I2C slave
  */
 uint8_t I2C_ReadRegister(register uint8_t slaveId, register uint8_t registerAddress)
 {
@@ -58,7 +62,7 @@ uint8_t I2C_ReadRegister(register uint8_t slaveId, register uint8_t registerAddr
 }
 
 /**
- * @brief Reads an 8-bit register from an I2C slave
+ * Reads an 8-bit register from an I2C slave
  */
 void I2C_WriteCommand(register uint8_t slaveId, register uint8_t value)
 {
@@ -79,52 +83,24 @@ void I2C_WriteCommand(register uint8_t slaveId, register uint8_t value)
 }
 
 
-void I2C_WriteConfigRegister(register uint8_t slaveId, register uint8_t commandbyte, register uint8_t value)
-{
-	/* loop while the bus is still busy */
-	I2C_WaitWhileBusy();
 
-	/* send I2C start signal and set write direction*/
-	I2C_SendStart();
-
-	/* send the slave address and wait for the I2C bus operation to complete */
-	I2C_SendBlocking(I2C_WRITE_ADDRESS(slaveId));
-
-	I2C_SendBlocking(commandbyte);
-
-	I2C_SendBlocking(value);
-
-	/* issue stop signal by clearing master mode. */
-	I2C_SendStop();
-}
-
-/**
- * @brief Reads multiple 8-bit registers from an I2C slave
- * @param[in] slaveId The slave device ID
- * @param[in] startRegisterAddress The first register address
- * @param[in] registerCount The number of registers to read; Must be larger than zero.
- * @param[out] buffer The buffer to write into
- */
 void I2C_ReadRegisters(register uint8_t slaveId, register uint8_t command, register uint8_t registerCount, register uint8_t *buffer)
 {
-	//assert(registerCount > 0);
-
-	if (registerCount >= 2)
+	if (registerCount > 1)
 	{
-		I2C_ReadRegistersInternal(slaveId, command, registerCount, buffer);
+		I2C_ReadMultipleRegisters(slaveId, command, registerCount, buffer);
 	}
 	else
 	{
-		//assert(1 == registerCount);
 		register uint8_t result = I2C_ReadRegister(slaveId, command);
 		buffer[0] = result;
 	}
 }
 
 
-static void I2C_ReadRegistersInternal(register uint8_t slaveId, register uint8_t startRegisterAddress, register uint8_t registerCount, uint8_t *const buffer)
+static void I2C_ReadMultipleRegisters(register uint8_t slaveId, register uint8_t startRegisterAddress, register uint8_t registerCount, uint8_t *const buffer)
 {
-	//assert(registerCount >= 2);
+
 	uint8_t TEM;
 
 	/* loop while the bus is still busy */
@@ -149,9 +125,8 @@ static void I2C_ReadRegistersInternal(register uint8_t slaveId, register uint8_t
 	I2C_EnterReceiveModeWithAck();
 
 	/* for all remaining bytes, read */
-	--registerCount;
 	uint8_t index = 0;
-	while (--registerCount > 0)
+	while (registerCount-- > 0)
 	{
 		/* fetch and store value */
 		register uint8_t value = I2C1->D;
