@@ -8,7 +8,7 @@
 #include "main.h"
 uint16_t MASK = 0x8000;
 float MUL =64;
-#define ResetMultiplciationfactor  MUL = 64;
+#define ResetMultiplciationfactor  MUL = 64.00;
 
 void start_Temperature_Conversion(void)
 {
@@ -17,11 +17,11 @@ void start_Temperature_Conversion(void)
 
 float convert_temperature(uint16_t val){
 	uint8_t i = 0, right_shift =14;
-	float tempval, result = 0;
-	uint16_t temp;
+	float tempval, result = 0.00;
+	float temp;
 
 	for(i = 1 ; i < 15 ; i++){;
-     temp = (val & MASK >> i)>>right_shift;
+     temp = (val & (MASK >> i))>>right_shift;
      right_shift--;
      tempval = temp*MUL;
      MUL = MUL/2;

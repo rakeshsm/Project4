@@ -16,11 +16,18 @@
 #include "firmware_i\nvic.h"
 #include "firmware_i\uart.h"
 #include "firmware_i\rtc.h"
+#include "firmware_i\tsi.h"
+#include "firmware_i\led.h"
 #define LOG
+#define NCHANNELS 16
 extern int seconds;
 extern int minutes;
 extern int onesecond;
 extern int hours;
 extern int totalAlarmSeconds;
+extern int alarmSet;
+extern volatile uint16_t raw_counts[NCHANNELS];
+extern volatile uint16_t base_counts[NCHANNELS];
+extern uint32_t enable_mask;
 
 #endif /* INCLUDES_MAIN_H_ */

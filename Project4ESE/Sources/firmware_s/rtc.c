@@ -39,23 +39,23 @@ void rtc_init(void)
     /*Set time compensation parameters*/
     RTC_TCR = RTC_TCR_CIR(1) | RTC_TCR_TCR(0xFF);
 
-    NVIC_EnableIRQ(RTC_IRQn);
     NVIC_EnableIRQ(RTC_Seconds_IRQn);
+
     /*Enable Seconds Interrupt*/
-    RTC_IER |= RTC_IER_TSIE_MASK; //Seconds interrupt enable
+    RTC_IER |= RTC_IER_TSIE_MASK;
 
     /*Timer enable*/
     RTC_SR |= RTC_SR_TCE_MASK;
 
-    RTC_TSR = 0xFF;
-
-    /*Enable Alarm Interrupt*/
-   	RTC_IER |= RTC_IER_TAIE_MASK; //Alarm interrupt enable
 }
 
-void setAlarm(alarmMinutes,alarmSeconds){
-
+void setAlarm(int alarmMinutes, int alarmSeconds){
 	totalAlarmSeconds = alarmMinutes*60 + alarmSeconds;
     RTC_TAR = totalAlarmSeconds;
+    NVIC_EnableIRQ(RTC_IRQn);
+
+    /*Enable Alarm Interrupt*/
+    RTC_IER |= RTC_IER_TAIE_MASK;
+
 }
 
